@@ -21,8 +21,7 @@ model User {
 
 model Pressure {
   id        String @id @default(uuid())
-  systolic  Int
-  diastolic Int
+  pressure  String
   pulse     Int
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

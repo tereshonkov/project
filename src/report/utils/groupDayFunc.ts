@@ -2,8 +2,8 @@ import type { PressureRecord } from 'types/PressureRecordType';
 
 type DailyMeasurement = {
   date: string; // '14.11.2025'
-  morning?: { systolic: number; diastolic: number; pulse: number };
-  evening?: { systolic: number; diastolic: number; pulse: number };
+  morning?: { pressure: string; pulse: number };
+  evening?: { pressure: string; pulse: number };
 };
 
 export function groupByDay(records: PressureRecord[]): DailyMeasurement[] {
@@ -19,8 +19,7 @@ export function groupByDay(records: PressureRecord[]): DailyMeasurement[] {
 
     const measurement = {
       // Создаем объект измерения давления и пульса
-      systolic: r.systolic,
-      diastolic: r.diastolic,
+      pressure: r.pressure,
       pulse: r.pulse,
     };
 

@@ -1,19 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { PressureDto } from './dto/dto.pressure';
+import { CreatePressureDto } from './dto/dto.pressure';
 
 @Injectable()
 export class PressureService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async createPressureRecord(dto: PressureDto) {
-    const { userId, systolic, diastolic, pulse } = dto;
+  async createPressureRecord(dto: CreatePressureDto) {
+    const { userId, pressure, pulse } = dto;
     // eslint-disable-next-line
     return await this.prismaService.pressure.create({
       data: {
-        userId,
-        systolic,
-        diastolic,
+        user: { connect: { id: userId } },
+        pressure,
         pulse,
       },
     });

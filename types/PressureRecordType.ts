@@ -1,6 +1,5 @@
 export type PressureRecord = {
-  systolic: number;
-  diastolic: number;
+  pressure: string;
   pulse: number;
   createdAt: Date | string;
 };

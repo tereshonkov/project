@@ -44,13 +44,9 @@ export class ReportService {
       body.push([
         record.date,
         record.morning ? String(record.morning.pulse) : '-',
-        record.morning
-          ? `${record.morning.systolic}/${record.morning.diastolic}`
-          : '—',
+        record.morning ? `${record.morning.pressure}` : '—',
         record.evening ? String(record.evening.pulse) : '-',
-        record.evening
-          ? `${record.evening.systolic}/${record.evening.diastolic}`
-          : '—',
+        record.evening ? `${record.evening.pressure}` : '—',
       ]);
     });
 
