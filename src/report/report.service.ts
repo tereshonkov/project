@@ -14,6 +14,11 @@ type PressureRecord = {
   updatedAt: Date;
 };
 
+type DailyMeasurement = {
+  date: string;
+  measurements: { pulse: string; pressure: string }[];
+};
+
 @Injectable()
 export class ReportService {
   constructor(
@@ -31,6 +36,20 @@ export class ReportService {
           date: day,
         });
       dates.push(...pressureRecords);
+    }
+    // Группировка по дате
+    const grouped: Record<string, DailyMeasurement> = {};
+    for (const r of dates) {
+      // <- здесь dates, а не records
+      const dateStr = new Date(r.createdAt).toLocaleDateString('uk-UA');
+      if (!grouped[dateStr])
+        grouped[dateStr] = { date: dateStr, measurements: [] };
+
+      grouped[dateStr].measurements.push({
+        pulse:
+          r.pulse != null && !isNaN(Number(r.pulse)) ? String(r.pulse) : '-',
+        pressure: r.pressure || '-',
+      });
     }
 
     const groupedRecords = groupByDay(dates);
@@ -50,35 +69,16 @@ export class ReportService {
 
     const printer = new PdfPrinter(fonts);
 
-    const body = [
-      [
-        'Дата',
-        'Утренний пульс',
-        'Утреннее давление',
-        'Вечерний пульс',
-        'Вечернее давление',
-      ],
-    ];
+    const body: (string | number)[][] = [['Дата', 'Пульс', 'Давление']];
 
     groupedRecords.forEach((record) => {
-      // Склеиваем все утренние измерения через запятую
-      const morningPulse =
-        (record.morning ?? []).map((m) => m.pulse).join(', ') || '-';
-      const morningPressure =
-        (record.morning ?? []).map((m) => m.pressure).join(', ') || '—';
-
-      const eveningPulse =
-        (record.evening ?? []).map((m) => m.pulse).join(', ') || '-';
-      const eveningPressure =
-        (record.evening ?? []).map((m) => m.pressure).join(', ') || '—';
-
-      body.push([
-        record.date,
-        morningPulse,
-        morningPressure,
-        eveningPulse,
-        eveningPressure,
-      ]);
+      record.measurements.forEach((m, i) => {
+        body.push([
+          i === 0 ? record.date : '', // только для первой строки даты
+          m.pulse,
+          m.pressure,
+        ]);
+      });
     });
 
     const docDefinition = {
@@ -91,7 +91,7 @@ export class ReportService {
         {
           table: {
             headerRows: 1,
-            widths: ['*', 'auto', 'auto', 'auto', 'auto'],
+            widths: ['auto', '*', '*'],
             body,
           },
         },
