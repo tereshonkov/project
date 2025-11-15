@@ -61,12 +61,23 @@ export class ReportService {
     ];
 
     groupedRecords.forEach((record) => {
+      // Склеиваем все утренние измерения через запятую
+      const morningPulse =
+        (record.morning ?? []).map((m) => m.pulse).join(', ') || '-';
+      const morningPressure =
+        (record.morning ?? []).map((m) => m.pressure).join(', ') || '—';
+
+      const eveningPulse =
+        (record.evening ?? []).map((m) => m.pulse).join(', ') || '-';
+      const eveningPressure =
+        (record.evening ?? []).map((m) => m.pressure).join(', ') || '—';
+
       body.push([
         record.date,
-        record.morning ? String(record.morning.pulse) : '-',
-        record.morning ? `${record.morning.pressure}` : '—',
-        record.evening ? String(record.evening.pulse) : '-',
-        record.evening ? `${record.evening.pressure}` : '—',
+        morningPulse,
+        morningPressure,
+        eveningPulse,
+        eveningPressure,
       ]);
     });
 
