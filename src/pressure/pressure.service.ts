@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePressureDto } from './dto/dto.pressure';
+import { startOfDay, endOfDay } from 'date-fns';
 
 @Injectable()
 export class PressureService {
@@ -33,17 +34,15 @@ export class PressureService {
 
   async getPressureRecordByDate(dto: { userId: string; date: string }) {
     const { userId, date } = dto;
-    const startDate = new Date(date);
-    startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date(date);
-    endDate.setHours(23, 59, 59, 999);
+    const dayStart = startOfDay(new Date(date));
+    const dayEnd = endOfDay(new Date(date));
     // eslint-disable-next-line
     return await this.prismaService.pressure.findMany({
       where: {
         userId,
         createdAt: {
-          gte: startDate,
-          lte: endDate,
+          gte: dayStart,
+          lte: dayEnd,
         },
       },
       orderBy: {

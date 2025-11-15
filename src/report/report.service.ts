@@ -3,6 +3,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PressureService } from '../pressure/pressure.service';
 import { groupByDay } from './utils/groupDayFunc';
 import PdfPrinter = require('pdfmake'); // PdfPrinter для Node
+import * as path from 'path';
+
+type PressureRecord = {
+  id: string;
+  userId: string;
+  pressure: string;
+  pulse: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 @Injectable()
 export class ReportService {
@@ -11,20 +21,30 @@ export class ReportService {
     private readonly pressureService: PressureService,
   ) {}
 
-  async generatePdf(userId: string, date: string): Promise<Buffer> {
-    const pressureRecords = await this.pressureService.getPressureRecordByDate({
-      userId,
-      date,
-    });
+  async generatePdf(userId: string, date: string[]): Promise<Buffer> {
+    const dates: PressureRecord[] = [];
 
-    const groupedRecords = groupByDay(pressureRecords);
+    for (const day of date) {
+      const pressureRecords =
+        await this.pressureService.getPressureRecordByDate({
+          userId,
+          date: day,
+        });
+      dates.push(...pressureRecords);
+    }
+
+    const groupedRecords = groupByDay(dates);
+
+    console.log('Pressure records for PDF:', dates);
+    console.log('Grouped records:', groupedRecords);
+    console.log('Requested dates:', date);
 
     const fonts = {
       Roboto: {
-        normal: 'node_modules/pdfmake/build/vfs_fonts.js', // временно можно оставить путь, PdfPrinter требует объект, ниже исправим
-        bold: 'node_modules/pdfmake/build/vfs_fonts.js',
-        italics: 'node_modules/pdfmake/build/vfs_fonts.js',
-        bolditalics: 'node_modules/pdfmake/build/vfs_fonts.js',
+        normal: path.join(process.cwd(), 'fonts/Roboto-Regular.ttf'),
+        bold: path.join(process.cwd(), 'fonts/Roboto-Medium.ttf'),
+        italics: path.join(process.cwd(), 'fonts/Roboto-Italic.ttf'),
+        bolditalics: path.join(process.cwd(), 'fonts/Roboto-MediumItalic.ttf'),
       },
     };
 
@@ -51,8 +71,12 @@ export class ReportService {
     });
 
     const docDefinition = {
+      defaultStyle: { font: 'Roboto' },
       content: [
-        { text: 'Отчет по давлению за день', style: 'header' },
+        {
+          text: 'Отчет по давлению Терешонкова Маргарита Валериевна',
+          style: 'header',
+        },
         {
           table: {
             headerRows: 1,
@@ -62,7 +86,11 @@ export class ReportService {
         },
       ],
       styles: {
-        header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] },
+        header: {
+          fontSize: 18,
+          bold: true,
+          margin: [0, 0, 0, 10],
+        },
       },
     };
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Res } from '@nestjs/common';
+import { Body, Controller, Post, Param, Res } from '@nestjs/common';
 import { ReportService } from './report.service';
 import type { Response } from 'express';
 
@@ -6,10 +6,10 @@ import type { Response } from 'express';
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
 
-  @Get(':userId/pdf')
+  @Post(':userId/pdf')
   async getPdfReport(
     @Param('userId') userId: string,
-    @Body('date') date: string,
+    @Body('date') date: string[],
     @Res() res: Response,
   ) {
     const pdfBuffer = await this.reportService.generatePdf(userId, date);
